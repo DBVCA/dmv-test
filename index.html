@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CA DMV Class C Practice Test</title>
+<style>
+  :root { --ok:#1a7f37; --okbg:#e6f4ea; --bad:#c62828; --badbg:#fdecea; --line:#d0d7de; --accent:#0b5cad; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#f6f8fa; color:#1f2328; line-height:1.4; }
+  header { background: var(--accent); color:#fff; padding: 16px; position: sticky; top: 0; z-index: 5; }
+  header h1 { margin: 0 0 8px; font-size: 1.2rem; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  select, button { font-size: 1rem; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); }
+  button { cursor:pointer; font-weight:600; }
+  #gradeBtn { background:#fff; color:var(--accent); border-color:#fff; }
+  #resetBtn { background:transparent; color:#fff; border-color:#fff; }
+  #score { font-weight:700; margin-left:auto; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .q { background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:12px; }
+  .q.wrong { border-color: var(--bad); background: var(--badbg); }
+  .q.right { border-color: var(--ok); }
+  .q h3 { margin:0 0 10px; font-size:1rem; }
+  .tag { font-size:.75rem; color:#57606a; font-weight:400; }
+  label.opt { display:block; padding:8px 10px; border:1px solid var(--line); border-radius:6px; margin:6px 0; background:#fff; cursor:pointer; }
+  label.opt input { margin-right:8px; }
+  label.opt.correct { border-color: var(--ok); background: var(--okbg); font-weight:600; }
+  label.opt.picked-wrong { border-color: var(--bad); text-decoration: line-through; }
+  .msg { margin-top:8px; font-weight:600; }
+  .msg.bad { color: var(--bad); } .msg.ok { color: var(--ok); }
+  footer { max-width:760px; margin:0 auto 32px; padding:0 16px; font-size:.8rem; color:#57606a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CA DMV Class C Practice Test</h1>
+  <div class="bar">
+    <button id="gradeBtn">Grade</button>
+    <button id="resetBtn">Reset (new 40)</button>
+    <span id="score"></span>
+  </div>
+</header>
+
+<main id="quiz"></main>
+
+<footer>
+  Questions are reworded from the California DMV's public sample tests (current online tests 1–4 and the 2014 DL 5S PDF). The 2014 set may reflect outdated rules. Study the California Driver Handbook as well — the real test draws from a larger, unpublished question bank.
+</footer>
+
+<script>
+// [set, question, [choices], correctIndex]
+const Q = [
+ ["C1","When is it legal to drive off the road to pass another vehicle?",["If the vehicle ahead is turning left","It is never legal","If there are two or more one-way lanes"],1],
+ ["C1","At an uncontrolled railroad crossing, within 100 ft and unable to see 400 ft both ways, the speed limit is:",["15 mph","10 mph","25 mph"],0],
+ ["C1","Proper parallel parking procedure:",["Drive forward into the space without stopping","Stop beside the vehicle behind the space, then drive forward in","Stop beside the vehicle in front of the space, then back in"],2],
+ ["C1","What speed should you drive when entering a highway?",["At or near the speed of traffic","Faster than traffic","Slower than traffic"],0],
+ ["C1","How far from an oncoming vehicle should you switch from high to low beams?",["900 feet","700 feet","500 feet"],2],
+ ["C1","Who may park at a blue curb?",["Someone picking up or dropping off passengers","A disabled person with a placard or disabled plates","Anyone parking less than 15 minutes"],1],
+ ["C1","A school bus ahead starts flashing yellow lights. You should:",["Slow down and prepare to stop","Stop immediately and stay stopped","Pass carefully on the left"],0],
+ ["C1","California's Basic Speed Law requires you to:",["Always drive the speed limit","Match the speed of surrounding traffic","Never drive faster than is safe for conditions"],2],
+ ["C1","You must notify the DMV within 5 days if you:",["Repaint your vehicle","Sell or transfer your vehicle","Receive a traffic ticket"],1],
+ ["C1","Which is a safe driving practice?",["Staring only at the middle of the road","Keeping your eyes moving to scan surroundings","Using high beams in fog"],1],
+
+ ["C2","A person in a motorized wheelchair has entered the crosswalk. You should:",["Wait behind the crosswalk line until they have safely crossed","Wait until they are just out of your vehicle's path","Take the right-of-way if they stop in the crosswalk"],0],
+ ["C2","Which is true about large trucks?",["Multiple trailers make them more maneuverable","They have large blind spots","Powerful brakes let them stop quickly"],1],
+ ["C2","One of the most common causes of collisions is:",["Paying attention to surroundings","Better traffic flow","Driver distractions"],2],
+ ["C2","Willfully fleeing police and causing serious injury can result in:",["Up to 7 years in state prison","A fine under $1,000","An anger-management class"],0],
+ ["C2","You are stopped and want to turn left. You should:",["Turn immediately if no pedestrians are present","Turn ahead of oncoming traffic","Yield to approaching vehicles close enough to be dangerous"],2],
+ ["C2","When parking on a hill, in addition to setting the parking brake you should:",["Turn the wheels parallel to the road","Leave the vehicle in neutral","Put the vehicle in park or in gear"],2],
+ ["C2","A driver under 18 who has been licensed 8 months may drive:",["At any time","Between 5 a.m. and 11 p.m.","Between 7 a.m. and 8 p.m."],1],
+ ["C2","Turning left from a one-way street onto another one-way street, start from:",["The lane closest to the center","The far-left lane","Any lane"],1],
+ ["C2","You must file an SR-1 report with the DMV if:",["An out-of-state driver drives your car","You were in a collision with over $1,000 in damage","You didn't pay registration fees"],1],
+ ["C2","On a hot day, roads are most slippery:",["Right after the rain stops","During the first several minutes of rain","After it has rained for a few hours"],1],
+
+ ["C3","Which curb color means no stopping or parking?",["Yellow","Red","White"],1],
+ ["C3","You must file an SR-1 report with the DMV if:",["You change insurance companies","You were in a collision with an injury","Your vehicle fails a smog test"],1],
+ ["C3","Two sets of double yellow lines 2 feet or more apart indicate:",["Lanes moving the same direction","A barrier","A carpool/HOV lane"],1],
+ ["C3","To make a right turn where there is a bike lane, you should:",["Merge into the bike lane before turning","Wait until the bike lane ends, then turn","Turn from your lane without entering the bike lane"],0],
+ ["C3","A highway is posted 65 mph. This means:",["You must always drive 65 mph","You may go faster if no other vehicles are around","65 mph is allowed only in ideal conditions"],2],
+ ["C3","When may you park in a crosshatched (diagonal-line) area?",["Never","If it is at least 20 ft from railroad tracks","If it is marked as a bike lane"],0],
+ ["C3","Your phone rings and you have no hands-free device. You should:",["Answer and keep it short","Let it go to voicemail","Answer only at a red light"],1],
+ ["C3","The light is green but traffic is blocking the intersection. You should:",["Partially enter the intersection","Wait until you can get completely across","Drive around on the shoulder"],1],
+ ["C3","When making a right turn, end in:",["Any open lane","The lane nearest the left edge","The lane nearest the right edge"],2],
+ ["C3","When must you obey a crossing guard?",["At all times","During school hours only","Only when children are present"],0],
+
+ ["C4","Which is true about large trucks?",["Multiple trailers make them more maneuverable","They have large blind spots","Powerful emergency brakes let them stop quickly"],1],
+ ["C4","Which is illegal while driving?",["Headset or earplugs covering both ears","Headset or earplug covering one ear","Cruise control on residential streets"],0],
+ ["C4","Traffic is slow and you must cross railroad tracks before an intersection. You should:",["Start across when the car ahead is crossing","Wait on the tracks for the light to turn green","Wait until you can completely cross the tracks"],2],
+ ["C4","You are being tailgated. You should:",["Change lanes and let them pass","Tap your brakes","Speed up to match them"],0],
+ ["C4","You can get a speeding ticket while driving the speed limit:",["If conditions require a slower speed","Never","Only near a sharp curve"],0],
+ ["C4","Dust or smoke is blowing across the road. Use your:",["Parking lights","Emergency flashers","Headlights"],2],
+ ["C4","To make a right turn where there is a bike lane, you should:",["Wait until the bike lane ends, then turn","Turn from your lane without entering the bike lane","Merge into the bike lane before turning"],2],
+ ["C4","A flashing yellow signal means:",["Stop, then go when safe","Slow down and proceed with caution","Stop and wait for a flashing green"],1],
+ ["C4","Your light turns green but a pedestrian is still in the crosswalk. You should:",["Wait until they are out of your path","Wait for them to signal you","Wait until they have completely crossed"],2],
+ ["C4","An opened alcohol container may legally be carried:",["Under the front seat","In the trunk","In the glove compartment"],1],
+
+ ["O1","You may drive off the paved road to pass another vehicle:",["If the shoulder is wide enough","If the vehicle ahead is turning left","Under no circumstances"],2],
+ ["O1","Unprotected railroad crossing, can't see 400 ft of track one way. Speed limit:",["15 mph","20 mph","25 mph"],0],
+ ["O1","When parallel parking on a level street:",["Turn front wheels toward the street","Keep wheels within 18 inches of the curb","Rest a rear wheel against the curb"],1],
+ ["O1","When merging onto a freeway, drive:",["About the same speed as freeway traffic","5–10 mph slower than traffic","At the posted limit"],0],
+ ["O1","In fog, use:",["Fog lights only","High beams","Low beams"],2],
+ ["O1","A white curb means:",["Freight or passenger loading","Passenger or mail loading only","Freight loading only"],1],
+ ["O1","A school bus in your lane is stopped with red lights flashing. You should:",["Stop, then go once children are off","Slow to 25 mph and pass","Stop as long as the red lights flash"],2],
+ ["O1","The Basic Speed Law means:",["Never exceed the posted limit","Never drive faster than is safe for conditions","Max is 70 mph on some freeways"],1],
+ ["O1","After selling your vehicle, notify the DMV within:",["5 days","10 days","15 days"],0],
+ ["O1","To avoid last-minute moves, look ahead to where you'll be in:",["5–10 seconds","10–15 seconds","15–20 seconds"],1],
+
+ ["O2","Before a left turn, signal continuously for the last:",["50 feet","75 feet","100 feet"],2],
+ ["O2","Which is true about blind spots?",["One outside mirror per side eliminates them","Large trucks have bigger blind spots","Rear-view mirrors check them"],1],
+ ["O2","You hit an unattended parked car and can't find the owner. You must:",["Leave a note","Report it to police or CHP","Both"],2],
+ ["O2","Unless posted, the residential speed limit is:",["20 mph","25 mph","30 mph"],1],
+ ["O2","You may legally block an intersection:",["If you entered on green","During rush hour","Never"],2],
+ ["O2","Parking uphill on a two-way street with no curb, front wheels should be:",["Turned left, toward the street","Turned right, away from the street","Parallel to the pavement"],1],
+ ["O2","With a Class C license you may drive:",["A 3-axle vehicle under 6,000 lbs GVW","Any 3-axle vehicle","A vehicle pulling two trailers"],0],
+ ["O2","Turning left from a multilane one-way street onto a one-way street, start from:",["Any lane if safe","The lane closest to the left curb","The center lane"],1],
+ ["O2","You must file a written SR-1 report with the DMV:",["Only if someone is injured","If damage exceeds $750 or anyone is injured (now $1,000)","Only if you were at fault"],1],
+ ["O2","Roads are most slippery:",["During a heavy downpour","After it has rained a while","During the first rain after a dry spell"],2],
+
+ ["O3","You may not park:",["On a freeway shoulder in an emergency","Next to a red curb","Within 100 ft of an elementary school"],1],
+ ["O3","You must notify the DMV within 5 days if you:",["Sell or transfer your vehicle","Fail a smog test","Get new glasses or contacts"],0],
+ ["O3","Two sets of solid double yellow lines 2+ ft apart:",["May be crossed to enter a driveway","May never be crossed","Are a separate lane"],1],
+ ["O3","Before an upcoming right turn, slow down and:",["Move to the left side of your lane","Avoid the bike lane","Signal about 100 ft before turning"],2],
+ ["O3","Freeway posted 65 mph, traffic going 70. You may legally drive:",["70 mph or faster","65–70 mph","No faster than 65 mph"],2],
+ ["O3","It is illegal to park:",["In an unmarked crosswalk","Within 3 ft of a private driveway","In a bike lane"],0],
+ ["O3","The safest precaution for cell phone use while driving:",["Use hands-free so both hands stay on the wheel","Keep the phone within reach","Check the number before answering"],0],
+ ["O3","Green light but traffic is blocking the intersection. You should:",["Stay out until traffic clears","Enter and wait","Go around the traffic"],0],
+ ["O3","Preparing to turn right, you should:",["Signal and turn immediately","Stop and let all traffic go first","Slow or stop if needed, then turn"],2],
+ ["O3","You must obey school crossing guards:",["At all times","Only during school hours","Unless no children are visible"],0],
+
+ ["O4","In a dust storm that reduces visibility, slow down and turn on your:",["Interior lights","Parking lights","Headlights"],2],
+ ["O4","Before passing, you should:",["Not assume the other driver will make room for you","Assume they'll let you pass if you signal","Assume they'll keep a steady speed"],0],
+ ["O4","Freeway posted 65 mph, most traffic at 70+. You may legally drive:",["70 mph or faster","65–70 mph","No faster than 65 mph"],2],
+ ["O4","On a two-lane road, constantly passing other cars will:",["Get you there faster and safer","Increase your risk of a collision","Help prevent congestion"],1],
+ ["O4","Which vehicles must always stop before railroad tracks?",["Tank trucks with hazmat placards","Motor homes towing boats","Any vehicle with 3+ axles"],0],
+ ["O4","From a one-way street you may turn left onto another one-way street only if:",["A sign permits it","Traffic on it moves right","Traffic on it moves left"],2],
+ ["O4","A large truck turning right onto a two-lane-each-way street:",["May finish in either lane","May have to swing wide","Must stay in the right lane"],1],
+ ["O4","You may cross a double yellow line to pass if the line on:",["The other side is solid","Your side is broken","The other side is broken"],1],
+ ["O4","At intersections, crosswalks, and railroad crossings, always:",["Stop, listen, and proceed","Look to the sides of your vehicle","Slowly pass cars that seem stopped for no reason"],1],
+ ["O4","You drive defensively when you:",["Keep one car length back","Look only at the car ahead","Keep your eyes moving for hazards"],2],
+
+ ["O5","On a freeway behind a large truck, you should:",["Follow closely in bad weather","Stay farther back than for a car","Stay one car length back"],1],
+ ["O5","Which dangerous practice is also illegal?",["Headphones covering both ears","Adjusting outside mirrors","An unrestrained pet inside the car"],0],
+ ["O5","Always stop before railroad tracks when:",["There's no room to completely cross","Trains are frequent in the city","You carry two or more young children"],0],
+ ["O5","When you tailgate other drivers:",["You can frustrate and anger them","You can't be cited","You reduce congestion"],0],
+ ["O5","Should you always drive slower than other traffic?",["No, you can block traffic","Yes, it's defensive driving","Yes, it's always safer"],0],
+ ["O5","Obey a construction flagger:",["Only if cones are ahead","Unless it conflicts with signs or laws","At all times"],2],
+ ["O5","You may drive in a bike lane:",["At rush hour if no cyclists","Within 200 ft of a cross street where you'll turn right","To pass a car turning right"],1],
+ ["O5","A flashing yellow signal means:",["Stop if you safely can","Stop and yield to cross traffic","Slow down and cross carefully"],2],
+ ["O5","A pedestrian is crossing ahead with no crosswalk. You should:",["Make eye contact and pass","Slow down as you pass","Stop and let them finish crossing"],2],
+ ["O5","A solid yellow line next to a broken yellow line means passing is allowed for vehicles:",["In both directions","Next to the broken line","Next to the solid line"],1],
+];
+
+const quiz = document.getElementById('quiz');
+const scoreEl = document.getElementById('score');
+const LABEL = {C:"Current Test ",O:"2014 Test "};
+let current = [];
+let graded = false;
+
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function build(){
+  current = shuffle(Q).slice(0, 40);
+  graded = false; scoreEl.textContent = '';
+  quiz.innerHTML = current.map((q,i) => `
+    <div class="q" id="q${i}">
+      <h3>${i+1}. ${q[1]} <span class="tag">(${LABEL[q[0][0]]}${q[0][1]})</span></h3>
+      ${q[2].map((c,j)=>`<label class="opt" id="q${i}o${j}"><input type="radio" name="q${i}" value="${j}">${String.fromCharCode(65+j)}. ${c}</label>`).join('')}
+      <div class="msg" id="m${i}"></div>
+    </div>`).join('');
+  window.scrollTo(0,0);
+}
+
+function grade(){
+  let right = 0, firstWrong = null;
+  current.forEach((q,i) => {
+    const box = document.getElementById('q'+i), msg = document.getElementById('m'+i);
+    const sel = box.querySelector('input:checked');
+    const pick = sel ? +sel.value : -1;
+    box.classList.remove('right','wrong');
+    q[2].forEach((_,j)=>document.getElementById(`q${i}o${j}`).classList.remove('correct','picked-wrong'));
+    if (pick === q[3]) { right++; box.classList.add('right'); msg.className='msg ok'; msg.textContent='✓ Correct'; }
+    else {
+      box.classList.add('wrong'); msg.className='msg bad';
+      msg.textContent = pick < 0 ? '✗ Not answered' : '✗ Wrong';
+      if (pick >= 0) document.getElementById(`q${i}o${pick}`).classList.add('picked-wrong');
+      if (firstWrong === null) firstWrong = box;
+    }
+  });
+  const pct = Math.round(right / current.length * 100);
+  scoreEl.textContent = `${right}/${current.length} (${pct}%) ${pct >= 83 ? 'PASS' : 'FAIL'}`;
+  graded = true;
+  if (firstWrong) firstWrong.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+document.getElementById('gradeBtn').onclick = grade;
+document.getElementById('resetBtn').onclick = build;
+build();
+</script>
+</body>
+</html>
